@@ -113,11 +113,14 @@
                         x.Id == match.ParentId &&
                         x.Type == match.ParentType);
 
-                    if (parent?.Name != importedObject.ParentName
-                        || parent?.Schema != importedObject.ParentSchema
-                        || parent?.Type != importedObject.ParentType)
+                    //zakomentuje bo nie rozumiem o jaki jest sens tego porównania
+                    //możliwe że tylko logujemy jeśli parent is null ? 
+                    //if (parent?.Name != importedObject.ParentName
+                    //    || parent?.Schema != importedObject.ParentSchema
+                    //    || parent?.Type != importedObject.ParentType)
+                    if (parent is null)
                     {
-                        logger.Log(importedObject.ToString());
+                        logger.Log($"No parent: {importedObject.ToString()}");
                         continue;
                     }
                 }
@@ -158,6 +161,14 @@
 
                 this.DataSource.Add(dataSourceObject);
             }
+
+            foreach (var importedObject in this.DataSource)
+            {
+                importedObject.Type = importedObject.Type.Clear().ToUpper();
+                importedObject.Name = importedObject.Name.Clear();
+                importedObject.Schema = importedObject.Schema.Clear();
+                importedObject.ParentType = importedObject.ParentType.Clear();
+            }
         }
 
         internal void Import(string fileToImport)
@@ -180,17 +191,17 @@
                 var values = importedLine.Split(';');
                 var importedObject = new ImportedObject
                 {
-                    Type = values[0],
-                    Name = values[1],
-                    Schema = values[2],
-                    ParentName = values[3],
-                    ParentType = values[4],
-                    ParentSchema = values[5],
-                    Title = values[6],
-                    Description = values[7],
-                    CustomField1 = values[8],
-                    CustomField2 = values[9],
-                    CustomField3 = values[10]
+                    Type = values?[0],
+                    Name = values?[1],
+                    Schema = values?[2],
+                    ParentName = values?[3],
+                    ParentType = values?[4],
+                    ParentSchema = values?[5],
+                    Title = values?[6],
+                    Description = values?[7],
+                    CustomField1 = values?[8],
+                    CustomField2 = values?[9],
+                    CustomField3 = values?[10]
                 };
 
                 this.ImportedObjects.Add(importedObject);

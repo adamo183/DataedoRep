@@ -15,6 +15,6 @@
         public string CustomField1 { get; set; }
         public string CustomField2 { get; set; }
         public string CustomField3 { get; set; }
-        public string ToString() => $"{Type} {Name} {Schema} {ParentType} {Title} {Description} {CustomField1} {CustomField2} {CustomField3}";
+        public string ToString() => $"{Type};{Name};{Schema};{ParentType};{Title};{Description};{CustomField1};{CustomField2};{CustomField3}";
     }
 }
