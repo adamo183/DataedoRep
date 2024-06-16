@@ -5,9 +5,16 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Security.Policy;
 
     public class Parser
     {
+        ILogger logger;
+        public Parser(ILogger _logger)
+        {
+            logger = _logger;
+        }
+
         private IList<ImportedObject> ImportedObjects;
         private IList<DataSourceObject> DataSource;
 
@@ -96,6 +103,7 @@
 
                 if (match is null)
                 {
+                    logger.Log(importedObject.ToString());
                     continue;
                 }
 
@@ -109,6 +117,7 @@
                         || parent?.Schema != importedObject.ParentSchema
                         || parent?.Type != importedObject.ParentType)
                     {
+                        logger.Log(importedObject.ToString());
                         continue;
                     }
                 }
