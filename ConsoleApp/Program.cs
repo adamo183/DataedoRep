@@ -20,7 +20,7 @@ namespace ConsoleApp
             var logger = serviceProvider.GetService<ILogger>();
 
             var reader = new Parser(logger);
-            reader.Do("sampleFile3.csv", "dataSource.csv");
+            reader.Do("sampleFile2.csv", "dataSource.csv");
         }
     }
 }

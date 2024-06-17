@@ -1,8 +1,10 @@
 ﻿namespace ConsoleApp
 {
+    using CsvHelper;
     using Microsoft.VisualBasic.FileIO;
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Security.Policy;
@@ -111,7 +113,7 @@
                 {
                     var parent = this.DataSource.FirstOrDefault(x =>
                         x.Id == match.ParentId &&
-                        x.Type == match.ParentType);
+                        x.Type == importedObject.ParentType);
 
                     //zakomentuje bo nie rozumiem o jaki jest sens tego porównania
                     //możliwe że tylko logujemy jeśli parent is null ? 
@@ -123,8 +125,15 @@
                         logger.Log($"No parent: {importedObject.ToString()}");
                         continue;
                     }
+
+                    parent.Title = importedObject.Title;
+                    parent.Description = importedObject.Description;
+                    parent.CustomField1 = importedObject.CustomField1;
+                    parent.CustomField2 = importedObject.CustomField2;
+                    parent.CustomField3 = importedObject.CustomField3;
+
                 }
-                
+
                 match.Title = importedObject.Title;
                 match.Description = importedObject.Description;
                 match.CustomField1 = importedObject.CustomField1;
@@ -167,53 +176,54 @@
                 importedObject.Type = importedObject.Type.Clear().ToUpper();
                 importedObject.Name = importedObject.Name.Clear();
                 importedObject.Schema = importedObject.Schema.Clear();
-                importedObject.ParentType = importedObject.ParentType.Clear();
+                importedObject.ParentType = importedObject.ParentType.Clear().ToUpper();
             }
         }
 
         internal void Import(string fileToImport)
         {
             this.ImportedObjects = new List<ImportedObject>();
-
-            var streamReader = new StreamReader(fileToImport);
-
-            var importedLines = new List<string>();
-
-            while (!streamReader.EndOfStream)
+            var config = new CsvHelper.Configuration.CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)
             {
-                var line = streamReader.ReadLine();
-                importedLines.Add(line);
-            }
+                Delimiter = ";",
+                MissingFieldFound = null,
+                TrimOptions = CsvHelper.Configuration.TrimOptions.Trim,
+                HeaderValidated = null
+            };
 
-            for (int i = 1; i < importedLines.Count; i++)
+
+            using (var reader = new StreamReader(fileToImport))
+            using (var csv = new CsvReader(reader, config))
             {
-                var importedLine = importedLines[i];
-                var values = importedLine.Split(';');
-                var importedObject = new ImportedObject
+                csv.Read();
+                csv.ReadHeader();
+                while (csv.Read())
                 {
-                    Type = values?[0],
-                    Name = values?[1],
-                    Schema = values?[2],
-                    ParentName = values?[3],
-                    ParentType = values?[4],
-                    ParentSchema = values?[5],
-                    Title = values?[6],
-                    Description = values?[7],
-                    CustomField1 = values?[8],
-                    CustomField2 = values?[9],
-                    CustomField3 = values?[10]
-                };
-
-                this.ImportedObjects.Add(importedObject);
+                    var importedObject = new ImportedObject()
+                    {
+                        Type = csv.GetField<string>("Type"),
+                        Name = csv.GetField<string>("Name"),
+                        Schema = csv.GetField<string>("Schema"),
+                        ParentName = csv.GetField<string>("ParentName"),
+                        ParentType = csv.GetField<string>("ParentType"),
+                        ParentSchema = csv.GetField<string>("ParentSchema"),
+                        Title = csv.GetField<string>("Title"),
+                        Description = csv.GetField<string>("Description"),
+                        CustomField1 = csv.GetField<string>("CustomField1"),
+                        CustomField2 = csv.GetField<string>("CustomField2"),
+                        CustomField3 = csv.GetField<string>("CustomField3")
+                    };
+                    ImportedObjects.Add(importedObject);
+                }
             }
 
-            foreach (var importedObject in this.ImportedObjects)
+            foreach (var importedObject in ImportedObjects)
             {
                 importedObject.Type = importedObject.Type.Clear().ToUpper();
                 importedObject.Name = importedObject.Name.Clear();
                 importedObject.Schema = importedObject.Schema.Clear();
                 importedObject.ParentName = importedObject.ParentName.Clear();
-                importedObject.ParentType = importedObject.ParentType.Clear();
+                importedObject.ParentType = importedObject.ParentType.Clear().ToUpper();
                 importedObject.ParentSchema = importedObject.ParentSchema.Clear();
             }
         }
